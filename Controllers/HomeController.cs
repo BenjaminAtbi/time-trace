@@ -15,6 +15,8 @@ namespace time_trace.Controllers
 
         public IActionResult Index()
         {
+            _logger.LogInformation("index page entered");
+            _logger.LogInformation("env: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
             return View();
         }
 
