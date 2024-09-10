@@ -29,6 +29,10 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+//logging env
+app.Logger.LogInformation("initialization logging is a go");
+app.Logger.LogInformation("Environment: " + builder.Environment.EnvironmentName);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
