@@ -21,7 +21,7 @@ if (builder.Environment.IsDevelopment())
 } else
 {
     logger.LogWarning("builder running in production");
-    var DBConnectionString = builder.Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING");
+    var DBConnectionString = Environment.GetEnvironmentVariable("AZURE_POSTGRESQL_CONNECTIONSTRING") ?? "NO_STRING";
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
     builder.Services.AddStackExchangeRedisCache(options =>
     {
