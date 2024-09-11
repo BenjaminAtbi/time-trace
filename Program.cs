@@ -13,11 +13,11 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
 } else
 {
-    var DBConnectionString = builder.Configuration["AZURE_POSTGRESQL_CONNECTIONSTRING"];
+    var DBConnectionString = builder.Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING");
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
     builder.Services.AddStackExchangeRedisCache(options =>
     {
-        options.Configuration = builder.Configuration["AZURE_REDIS_CONNECTIONSTRING"];
+        options.Configuration = builder.Configuration.GetConnectionString("AZURE_REDIS_CONNECTIONSTRING");
         options.InstanceName = "SampleInstance";
     });
 }
