@@ -33,6 +33,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef --version 6.*
 
       - name: check env
+        run: echo "test"
         run: echo $AZURE_POSTGRESQL_CONNECTIONSTRING
 
       - name: Create migrations bundle
