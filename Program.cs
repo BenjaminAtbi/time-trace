@@ -14,7 +14,7 @@ if (builder.Environment.IsDevelopment())
 } else
 {
     var DBConnectionString = builder.Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING");
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(DBConnectionString));
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
     builder.Services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = builder.Configuration["AZURE_REDIS_CONNECTIONSTRING"];
