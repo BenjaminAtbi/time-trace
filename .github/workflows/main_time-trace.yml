@@ -34,7 +34,7 @@ jobs:
 
       - name: check env
         run: echo "test"
-        run: echo $AZURE_POSTGRESQL_CONNECTIONSTRING
+             echo $AZURE_POSTGRESQL_CONNECTIONSTRING
 
       - name: Create migrations bundle
         run: dotnet ef migrations bundle --runtime linux-x64 --configuration Release -o ${{env.DOTNET_ROOT}}/myapp/migrationsbundle
