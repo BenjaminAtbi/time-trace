@@ -16,7 +16,7 @@ if (builder.Environment.IsDevelopment())
 {
     logger.LogWarning("builder running in development");
     var DBConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(DBConnectionString));
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
     builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
 } else
 {
