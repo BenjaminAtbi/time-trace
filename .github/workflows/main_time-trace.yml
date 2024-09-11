@@ -11,6 +11,8 @@ on:
 
 jobs:
   build:
+    env:
+      ASPNETCORE_ENVIRONMENT: Release
     runs-on: ubuntu-latest
 
     steps:
