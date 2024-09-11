@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment())
 {
     var DBConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(DBConnectionString));
     builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
 } else
 {
