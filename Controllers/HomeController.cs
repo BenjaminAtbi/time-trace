@@ -15,11 +15,13 @@ namespace time_trace.Controllers
 
         public IActionResult Index()
         {
+            _logger.LogInformation("index page");
             return View();
         }
 
         public IActionResult Privacy()
         {
+            _logger.LogInformation("privacy page");
             return View();
         }
 
