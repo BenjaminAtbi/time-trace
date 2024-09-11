@@ -5,14 +5,22 @@ using time_trace.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 
+
+using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+ILogger logger = factory.CreateLogger("Program");
+
+
+
 // Add services
 if (builder.Environment.IsDevelopment())
 {
+    logger.LogWarning("builder running in development");
     var DBConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(DBConnectionString));
     builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
 } else
 {
+    logger.LogWarning("builder running in production");
     var DBConnectionString = builder.Configuration.GetConnectionString("AZURE_POSTGRESQL_CONNECTIONSTRING");
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(DBConnectionString));
     builder.Services.AddStackExchangeRedisCache(options =>
