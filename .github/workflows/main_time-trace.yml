@@ -17,12 +17,6 @@ jobs:
       ConnectionStrings:AZURE_POSTGRESQL_CONNECTIONSTRING: ${{ secrets.AZURE_POSTGRESQL_CONNECTIONSTRING }}
     steps:
       - uses: actions/checkout@v4
-  
-      - name: Set ASPNETCORE_ENVIRONMENT to Production
-        run: echo "ASPNETCORE_ENVIRONMENT=Production" >> $GITHUB_ENV
-
-      - name: determine environment
-        run: echo ASPNETCORE_ENVIRONMENT
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
@@ -40,6 +34,9 @@ jobs:
 
       - name: Create migrations bundle
         run: dotnet ef migrations bundle --runtime linux-x64 --self-contained -o ${{env.DOTNET_ROOT}}/myapp/migrationsbundle
+
+      - name: Create deployment script
+        run: cp deploy.sh ${{env.DOTNET_ROOT}}/myapp/deploy.sh
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
