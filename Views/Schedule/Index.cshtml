@@ -1,0 +1,30 @@
+﻿@model IEnumerable<time_trace.Models.Schedule>
+
+@{
+    ViewData["Title"] = "Schedules";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Schedules
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,14 @@
+﻿@model time_trace.Models.Schedule
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>model.Name</p>
+    <p>@Model.Name</p>
+    <p>@Html.DisplayFor(model => model.Name)</p>
+    <p>@Html.DisplayNameFor(model => model.Name)</p>
+
+</div>
