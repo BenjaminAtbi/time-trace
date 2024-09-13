@@ -23,7 +23,7 @@ namespace time_trace.Data
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-        public DbSet<Schedule> Schedule { get; set; }
+        public DbSet<Schedule> Schedules { get; set; }
         public DbSet<UserSchedule> UserSchedules { get; set; }
         public DbSet<TimeRange> TimeRanges { get; set; }
 

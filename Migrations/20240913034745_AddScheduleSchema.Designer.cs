@@ -12,8 +12,8 @@ using time_trace.Data;
 namespace time_trace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240913024225_InitialSchedule")]
-    partial class InitialSchedule
+    [Migration("20240913034745_AddScheduleSchema")]
+    partial class AddScheduleSchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -237,7 +237,7 @@ namespace time_trace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Schedule");
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("time_trace.Models.TimeRange", b =>

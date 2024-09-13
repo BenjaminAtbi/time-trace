@@ -235,7 +235,7 @@ namespace time_trace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Schedule");
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("time_trace.Models.TimeRange", b =>

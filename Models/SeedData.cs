@@ -9,11 +9,11 @@ namespace time_trace.Models
         {
             using (var context = new ApplicationDbContext(serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
             {
-                if (context.Schedule.Any())
+                if (context.Schedules.Any())
                 {
                     return;
                 }
-                context.Schedule.Add(
+                context.Schedules.Add(
                     new Schedule
                     {
                         Name = "Default Schedule"
