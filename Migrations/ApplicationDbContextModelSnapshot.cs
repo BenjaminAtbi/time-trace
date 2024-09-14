@@ -257,7 +257,7 @@ namespace time_trace.Migrations
 
                     b.HasIndex("UserScheduleScheduleId", "UserScheduleUserId");
 
-                    b.ToTable("TimeRanges");
+                    b.ToTable("TimeSlots");
                 });
 
             modelBuilder.Entity("time_trace.Models.UserSchedule", b =>
