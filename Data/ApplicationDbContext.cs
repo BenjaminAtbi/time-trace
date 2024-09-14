@@ -18,14 +18,17 @@ namespace time_trace.Data
             base.OnModelCreating(builder);
             builder.Entity<ApplicationUser>()
                 .HasMany(e => e.Schedules)
-                .WithMany(e => e.ApplicationUsers)
+                .WithMany(e => e.Users)
                 .UsingEntity<UserSchedule>();
+
+            builder.Entity<TimeSlot>()
+                .HasKey(nameof(TimeSlot.UserScheduleId), nameof(TimeSlot.DateTime));
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<UserSchedule> UserSchedules { get; set; }
-        public DbSet<TimeRange> TimeRanges { get; set; }
+        public DbSet<TimeSlot> TimeRanges { get; set; }
 
 
     }

@@ -238,20 +238,13 @@ namespace time_trace.Migrations
                     b.ToTable("Schedules");
                 });
 
-            modelBuilder.Entity("time_trace.Models.TimeRange", b =>
+            modelBuilder.Entity("time_trace.Models.TimeSlot", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("UserScheduleId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserScheduleScheduleId")
                         .HasColumnType("integer");
@@ -260,7 +253,7 @@ namespace time_trace.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserScheduleId", "DateTime");
 
                     b.HasIndex("UserScheduleScheduleId", "UserScheduleUserId");
 
@@ -333,10 +326,10 @@ namespace time_trace.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("time_trace.Models.TimeRange", b =>
+            modelBuilder.Entity("time_trace.Models.TimeSlot", b =>
                 {
                     b.HasOne("time_trace.Models.UserSchedule", "UserSchedule")
-                        .WithMany("TimeRanges")
+                        .WithMany("TimeSlots")
                         .HasForeignKey("UserScheduleScheduleId", "UserScheduleUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -375,7 +368,7 @@ namespace time_trace.Migrations
 
             modelBuilder.Entity("time_trace.Models.UserSchedule", b =>
                 {
-                    b.Navigation("TimeRanges");
+                    b.Navigation("TimeSlots");
                 });
 #pragma warning restore 612, 618
         }

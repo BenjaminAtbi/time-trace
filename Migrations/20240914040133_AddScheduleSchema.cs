@@ -27,8 +27,8 @@ namespace time_trace.Migrations
                 name: "UserSchedules",
                 columns: table => new
                 {
-                    ScheduleId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ScheduleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -51,16 +51,14 @@ namespace time_trace.Migrations
                 name: "TimeRanges",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserScheduleId = table.Column<int>(type: "integer", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserScheduleScheduleId = table.Column<int>(type: "integer", nullable: false),
-                    UserScheduleUserId = table.Column<string>(type: "text", nullable: false),
-                    Data = table.Column<byte[]>(type: "bytea", nullable: false)
+                    UserScheduleUserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TimeRanges", x => x.Id);
+                    table.PrimaryKey("PK_TimeRanges", x => new { x.UserScheduleId, x.DateTime });
                     table.ForeignKey(
                         name: "FK_TimeRanges_UserSchedules_UserScheduleScheduleId_UserSchedul~",
                         columns: x => new { x.UserScheduleScheduleId, x.UserScheduleUserId },
