@@ -5,10 +5,54 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>model.Name</p>
-    <p>@Model.Name</p>
-    <p>@Html.DisplayFor(model => model.Name)</p>
-    <p>@Html.DisplayNameFor(model => model.Name)</p>
+    <h1 class="display-4">@Model.Name</h1>
+    <p>Test User: @User.Identity.Name</p>
+    <p>Test Users in Schedule: </p>
+    
+    <tbody>
+        <tr>
+
+        </tr>
+        @for(var i = 0; i < 24; i++)
+        {
+            <tr>
+
+            </tr>
+        }
+        <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+
+    @foreach (var user in Model.Users)
+    {
+        <p>@user.UserName - @user.Email</p>
+    }
+    <p>Test Users in Userschedules: </p>
+    @foreach (var user_schedule in Model.UserSchedules)
+    {
+        <p>@user_schedule.User.UserName - @user_schedule.User.Email</p>
+    }
+    
+    <p>Slots:</p>
+    @foreach (var schedule in Model.UserSchedules)
+    {
+        <p>@Html.DisplayFor(user => user.Name)</p>
+    }
+
+    <form asp-action="Edit">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <div class="form-group">
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </form>
 
 </div>
