@@ -9,7 +9,6 @@
     if (User.Identity != null) userName = @User.Identity.Name ?? "";
     var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
     if (userSchedule != null) InitialUserTimes.AddRange(userSchedule.TimeSlots.Select(t => t.DateTime));
-
     var InitialOtherTimes = Model.UserSchedules.Where(us => us.User.UserName != userName)
         .ToDictionary(
             us => us.User.UserName,
@@ -27,7 +26,7 @@
     <form asp-action="Edit">
         <div asp-validation-summary="All" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
-        <input class="form-control" type="DateTime-local" />
+        <input class="form-control" name="dateTimes" type="DateTime-local" />
         <div class="form-group">
             <input type="submit" value="Save" class="btn btn-primary" />
         </div>

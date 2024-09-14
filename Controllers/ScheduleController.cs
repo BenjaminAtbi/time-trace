@@ -49,38 +49,51 @@ namespace time_trace.Controllers
         // POST: ScheduleController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int? id, List<DateTime> dateTimes)
+        public async Task<ActionResult> Edit(int? id, DateTime dateTimes)
         {
             _logger.LogInformation("\n######\nBeginning Edit Post route\n########");
             if (id == null) return RedirectToAction(nameof(Index));
 
-            var activeUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (activeUserName == null) throw new Exception("No User logged in");
-            _logger.LogInformation($"got activeuserid from claims: {activeUserName}");
+            var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ActiveUID == null) RedirectToAction(nameof(Index));
+            _logger.LogInformation($"got activeuserid from claims: {ActiveUID}");
 
             var userSchedule = await _context.UserSchedules
                 .Include(u => u.TimeSlots)
-                .FirstOrDefaultAsync(s => s.User.UserName == activeUserName && s.ScheduleId == id);
+                .FirstOrDefaultAsync(s => s.User.Id == ActiveUID && s.ScheduleId == id);
             if (userSchedule == null)
             {
-                _logger.LogInformation($"failed to find UserSchedule with UserId: {activeUserName} and ScheduleID: {id}");
+                _logger.LogInformation($"failed to find UserSchedule with UserId: {ActiveUID} and ScheduleID: {id}");
 
                 var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
-                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == activeUserName);
-                _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {activeUserName}");
+                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
+                _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");
                 if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
 
-                schedule.UserSchedules.Add(new UserSchedule
+                userSchedule = new UserSchedule
                 {
                     Schedule = schedule,
                     User = activeUser,
-                });
+                };
+                schedule.UserSchedules.Add(userSchedule);
             }
-            userSchedule.TimeSlots = dateTimes.Select(d => new TimeSlot
+            if (dateTimes != null)
             {
-                UserSchedule = userSchedule,
-                DateTime = d
-            }).ToList();
+                //userSchedule.TimeSlots = dateTimes.Select(d => new TimeSlot
+                //{
+                //    UserSchedule = userSchedule,
+                //    DateTime = d
+                //}).ToList();
+                _logger.LogInformation($"DATETIME: {dateTimes} ");
+                userSchedule.TimeSlots = new List<TimeSlot>
+                {
+                    new TimeSlot
+                    {
+                        UserSchedule = userSchedule,
+                        DateTime = dateTimes.ToUniversalTime()
+                    }
+                };
+            }
 
             await _context.SaveChangesAsync();
 
