@@ -27,12 +27,12 @@
                         {
                             @if (selectedDateTimes.Contains(dateHour))
                             {
-                                <td class="timeSlot selected" @onclick="DoShit">
+                                <td class="timeSlot selected" @onclick="() => ToggleTime(dateHour)">
                                 </td>
                             }
                             else
                             {
-                                <td class="timeSlot" @onclick="DoShit">
+                                <td class="timeSlot" @onclick="() => ToggleTime(dateHour)">
                                 </td>
                             }
                         }
@@ -112,18 +112,16 @@
 @code {
 
     [Parameter]
-    public List<DateTime> userDateTimes { get; set; } = new();
-
-    [Parameter]
     public Dictionary<string,HashSet<DateTime>> otherDateTimes { get; set; } = new();
 
-    public HashSet<DateTime> selectedDateTimes { get; set; } = new HashSet<DateTime>();
+    [Parameter]
+    public HashSet<DateTime> selectedDateTimes { get; set; } = new();
 
     private DateTime baseDate = DateTime.Now.Date;
 
     public DateDisplay()
     {
-        selectedDateTimes.UnionWith(userDateTimes);
+        Debug.WriteLine($"INITIAL USER TIMES INSIDE COMP: [{string.Join(" ", selectedDateTimes.ToList())}]");
     }
 
     void ToggleTime(DateTime dateTime)
@@ -131,10 +129,5 @@
         Console.WriteLine($"dateTime");
         if (selectedDateTimes.Contains(dateTime)) selectedDateTimes.Remove(dateTime);
         else selectedDateTimes.Add(dateTime);
-    }
-
-    void DoShit()
-    {
-        Console.WriteLine($"fuck you three blind mice");
     }
 }

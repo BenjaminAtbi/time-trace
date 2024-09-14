@@ -1,26 +1,29 @@
 ﻿@using time_trace.Components
+@using System.Diagnostics
 @model time_trace.Models.Schedule
 
 @{
     ViewData["Title"] = Model.Name;
     string userName = "";
-    List<DateTime> InitialUserTimes = new();
+    HashSet<DateTime> InitialUserTimes = new();
 
     if (User.Identity != null) userName = @User.Identity.Name ?? "";
     var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
-    if (userSchedule != null) InitialUserTimes.AddRange(userSchedule.TimeSlots.Select(t => t.DateTime));
+    if (userSchedule != null) InitialUserTimes.UnionWith(userSchedule.TimeSlots.Select(t => t.DateTime));
     var InitialOtherTimes = Model.UserSchedules.Where(us => us.User.UserName != userName)
         .ToDictionary(
             us => us.User.UserName,
             us => us.TimeSlots.Select(t => t.DateTime).ToHashSet()
         );
+    Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ",InitialUserTimes)}]");
+    Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialOtherTimes.Values.SelectMany(h => h))}]");
 }
 
 <div class="text-center">
     
     <component type="typeof(DateDisplay)" 
-        render-mode="ServerPrerendered" 
-        param-userDateTimes="@InitialUserTimes" 
+        render-mode="Server" 
+        param-selectedDateTimes="@InitialUserTimes" 
         param-otherDateTimes="@InitialOtherTimes"/>
 
     <form asp-action="Edit">
