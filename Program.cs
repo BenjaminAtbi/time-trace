@@ -35,6 +35,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddServerSideBlazor();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -77,7 +78,7 @@ using (var scope = app.Services.CreateScope())
 
     //logging env
     app.Logger.LogInformation("initialization  logging is a go");
-app.Logger.LogInformation("Environment: " + builder.Environment.EnvironmentName);
+    app.Logger.LogInformation("Environment: " + builder.Environment.EnvironmentName);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -102,6 +103,6 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Schedule}/{action=Index}/{id?}");
+app.MapBlazorHub();
 app.MapRazorPages();
-
 app.Run();

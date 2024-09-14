@@ -1,0 +1,140 @@
+﻿@using time_trace.Models
+@using System.Diagnostics
+
+<div class="container">
+    <div class="tableWrapper">
+        <h3>Your Times</h3>
+        <table class="timeTable">
+            <thead>
+                <tr>
+                    <td />
+                    @foreach (var date in Enumerable.Range(0, 7).Select(x => baseDate.AddDays(x)))
+                    {
+                        <td class="timeSlot">
+                            <p class="timeSlotHeader">@date.ToString("ddd, MMM dd")</p>
+                        </td>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hour in Enumerable.Range(0, 24).Select(x => baseDate.AddHours(x)))
+                {
+                    <tr class="timeRow">
+                        <td class="timeSlot">
+                            <p class="timeRowHeader">@hour.ToString("hh tt")</p>
+                        </td>
+                        @foreach (var dateHour in Enumerable.Range(0, 7).Select(x => baseDate.AddDays(x)))
+                        {
+                            @if (selectedDateTimes.Contains(dateHour))
+                            {
+                                <td class="timeSlot selected" @onclick="DoShit">
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="timeSlot" @onclick="DoShit">
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="tableWrapper">
+        <h3>Other Users: @otherDateTimes.Keys.Aggregate("", (s, next) => $"{s} {next}")</h3>
+        <table class="timeTable">
+            <thead>
+                <tr>
+                    <td />
+                    @foreach (var date in Enumerable.Range(0, 7).Select(x => baseDate.AddDays(x)))
+                    {
+                        <td class="timeSlot">
+                            <p class="timeSlotHeader">@date.ToString("ddd, MMM dd")</p>
+                        </td>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hour in Enumerable.Range(0, 24).Select(x => baseDate.AddHours(x)))
+                {
+                    <tr class="timeRow">
+                        <td class="timeSlot">
+                            <p class="timeRowHeader">@hour.ToString("hh tt")</p>
+                        </td>
+                        @foreach (var dateHour in Enumerable.Range(0, 7).Select(x => baseDate.AddDays(x)))
+                        {
+                            @if (otherDateTimes.Values.Any(hashSet => hashSet.Contains(dateHour)))
+                            {
+                                <td class="timeSlot selected"></td>
+                            }
+                            else
+                            {
+                                <td class="timeSlot"></td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<style>
+    .container {
+        display:flex;
+    }
+    .tableWrapper {
+        margin: 20px;
+    }
+    .timeTable {
+        border: 1px solid;
+    }
+    .timeSlot {
+        border: 1px solid;
+    }
+    .timeRow {
+    }
+    .timeRowHeader {
+        font-size: x-small;
+        margin: 5px;
+    }
+    .timeSlotHeader {
+        font-size: x-small;
+        margin: 3px;
+    }
+    .selected {
+        bgcolor: green;
+    }
+</style>
+
+@code {
+
+    [Parameter]
+    public List<DateTime> userDateTimes { get; set; } = new();
+
+    [Parameter]
+    public Dictionary<string,HashSet<DateTime>> otherDateTimes { get; set; } = new();
+
+    public HashSet<DateTime> selectedDateTimes { get; set; } = new HashSet<DateTime>();
+
+    private DateTime baseDate = DateTime.Now.Date;
+
+    public DateDisplay()
+    {
+        selectedDateTimes.UnionWith(userDateTimes);
+    }
+
+    void ToggleTime(DateTime dateTime)
+    {
+        Console.WriteLine($"dateTime");
+        if (selectedDateTimes.Contains(dateTime)) selectedDateTimes.Remove(dateTime);
+        else selectedDateTimes.Add(dateTime);
+    }
+
+    void DoShit()
+    {
+        Console.WriteLine($"fuck you three blind mice");
+    }
+}

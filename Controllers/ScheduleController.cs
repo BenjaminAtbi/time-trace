@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -10,6 +11,7 @@ using time_trace.Models;
 
 namespace time_trace.Controllers
 {
+    [Authorize]
     public class ScheduleController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -36,8 +38,8 @@ namespace time_trace.Controllers
             if (id == null) return RedirectToAction(nameof(Index));
 
             var schedule = await _context.Schedules
-                .Include(s => s.Users)
                 .Include(s => s.UserSchedules).ThenInclude(s => s.TimeSlots)
+                .Include(s => s.UserSchedules).ThenInclude(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (schedule == null) return RedirectToAction(nameof(Index));
 
@@ -47,7 +49,7 @@ namespace time_trace.Controllers
         // POST: ScheduleController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int? id, List<TimeSlot> TimeSlots)
+        public async Task<ActionResult> Edit(int? id, List<DateTime> dateTimes)
         {
             _logger.LogInformation("\n######\nBeginning Edit Post route\n########");
             if (id == null) return RedirectToAction(nameof(Index));
@@ -56,17 +58,17 @@ namespace time_trace.Controllers
             if (activeUserName == null) throw new Exception("No User logged in");
             _logger.LogInformation($"got activeuserid from claims: {activeUserName}");
 
-            var UserSchedule = await _context.UserSchedules
+            var userSchedule = await _context.UserSchedules
                 .Include(u => u.TimeSlots)
                 .FirstOrDefaultAsync(s => s.User.UserName == activeUserName && s.ScheduleId == id);
-            if (UserSchedule == null)
+            if (userSchedule == null)
             {
                 _logger.LogInformation($"failed to find UserSchedule with UserId: {activeUserName} and ScheduleID: {id}");
 
                 var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
                 var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == activeUserName);
                 _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {activeUserName}");
-                if (schedule == null || activeUser == null) throw new Exception("Could not Retrieve schedule and Argument");
+                if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
 
                 schedule.UserSchedules.Add(new UserSchedule
                 {
@@ -74,17 +76,15 @@ namespace time_trace.Controllers
                     User = activeUser,
                 });
             }
-            //UserSchedule.TimeSlots = TimeSlots;
+            userSchedule.TimeSlots = dateTimes.Select(d => new TimeSlot
+            {
+                UserSchedule = userSchedule,
+                DateTime = d
+            }).ToList();
 
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Edit),id);
-        }
-
-        // GET: ScheduleController/Create
-        public ActionResult Create()
-        {
-            return View();
         }
 
         // POST: ScheduleController/Create
@@ -100,14 +100,6 @@ namespace time_trace.Controllers
             {
                 return View();
             }
-        }
-
-
-
-        // GET: ScheduleController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
         }
 
         // POST: ScheduleController/Delete/5

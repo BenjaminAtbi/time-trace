@@ -20,7 +20,6 @@ namespace time_trace.Data
                 .HasMany(e => e.Schedules)
                 .WithMany(e => e.Users)
                 .UsingEntity<UserSchedule>();
-
             builder.Entity<TimeSlot>()
                 .HasKey(nameof(TimeSlot.UserScheduleId), nameof(TimeSlot.DateTime));
         }

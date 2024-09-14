@@ -1,58 +1,35 @@
-﻿@model time_trace.Models.Schedule
+﻿@using time_trace.Components
+@model time_trace.Models.Schedule
 
 @{
     ViewData["Title"] = Model.Name;
+    string userName = "";
+    List<DateTime> InitialUserTimes = new();
+
+    if (User.Identity != null) userName = @User.Identity.Name ?? "";
+    var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
+    if (userSchedule != null) InitialUserTimes.AddRange(userSchedule.TimeSlots.Select(t => t.DateTime));
+
+    var InitialOtherTimes = Model.UserSchedules.Where(us => us.User.UserName != userName)
+        .ToDictionary(
+            us => us.User.UserName,
+            us => us.TimeSlots.Select(t => t.DateTime).ToHashSet()
+        );
 }
 
 <div class="text-center">
-    <h1 class="display-4">@Model.Name</h1>
-    <p>Test User: @User.Identity.Name</p>
-    <p>Test Users in Schedule: </p>
     
-    <tbody>
-        <tr>
-
-        </tr>
-        @for(var i = 0; i < 24; i++)
-        {
-            <tr>
-
-            </tr>
-        }
-        <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-
-    @foreach (var user in Model.Users)
-    {
-        <p>@user.UserName - @user.Email</p>
-    }
-    <p>Test Users in Userschedules: </p>
-    @foreach (var user_schedule in Model.UserSchedules)
-    {
-        <p>@user_schedule.User.UserName - @user_schedule.User.Email</p>
-    }
-    
-    <p>Slots:</p>
-    @foreach (var schedule in Model.UserSchedules)
-    {
-        <p>@Html.DisplayFor(user => user.Name)</p>
-    }
+    <component type="typeof(DateDisplay)" 
+        render-mode="ServerPrerendered" 
+        param-userDateTimes="@InitialUserTimes" 
+        param-otherDateTimes="@InitialOtherTimes"/>
 
     <form asp-action="Edit">
         <div asp-validation-summary="All" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
+        <input class="form-control" type="DateTime-local" />
         <div class="form-group">
             <input type="submit" value="Save" class="btn btn-primary" />
         </div>
     </form>
-
 </div>

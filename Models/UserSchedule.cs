@@ -9,7 +9,6 @@ namespace time_trace.Models
         public int ScheduleId { get; set; }
         public ApplicationUser User { get; set; } = null!;
         public Schedule Schedule { get; set; } = null!;
-
-        public IEnumerable<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
+        public List<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
     }
 }
