@@ -84,7 +84,7 @@ namespace time_trace.Controllers
                 //    UserSchedule = userSchedule,
                 //    DateTime = d
                 //}).ToList();
-                _logger.LogInformation($"DATETIME: {dateTimes} ");
+                _logger.LogInformation($"DATETIME:  {dateTimes} ");
                 userSchedule.TimeSlots = new List<TimeSlot>
                 {
                     new TimeSlot
