@@ -235,7 +235,7 @@ namespace time_trace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Schedules");
+                    b.ToTable("Schedules", (string)null);
                 });
 
             modelBuilder.Entity("time_trace.Models.TimeSlot", b =>
@@ -257,7 +257,7 @@ namespace time_trace.Migrations
 
                     b.HasIndex("UserScheduleScheduleId", "UserScheduleUserId");
 
-                    b.ToTable("TimeSlots");
+                    b.ToTable("TimeSlots", (string)null);
                 });
 
             modelBuilder.Entity("time_trace.Models.UserSchedule", b =>
@@ -272,7 +272,7 @@ namespace time_trace.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSchedules");
+                    b.ToTable("UserSchedules", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

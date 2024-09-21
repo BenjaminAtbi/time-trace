@@ -400,3 +400,5 @@ FodyWeavers.xsd
 /wwwroot/lib/bootstrap/dist/css/bootstrap-theme.css.map
 /wwwroot/lib/bootstrap/dist/css/bootstrap-theme.min.css
 /wwwroot/lib/bootstrap/dist/css/bootstrap-theme.min.css.map
+/ClientApp/package-lock.json
+/wwwroot/js

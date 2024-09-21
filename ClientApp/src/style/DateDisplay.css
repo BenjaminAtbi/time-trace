@@ -1,0 +1,33 @@
+﻿
+.dateDisplayContainer {
+    display: flex;
+}
+
+.dateTableWrapper {
+    margin: 20px;
+}
+
+.dateTimeTable {
+    border: 1px solid;
+}
+
+.timeSlot {
+    border: 1px solid;
+}
+
+.timeRow {
+}
+
+.timeRowHeader {
+    font-size: x-small;
+    margin: 5px;
+}
+
+.timeSlotHeader {
+    font-size: x-small;
+    margin: 3px;
+}
+
+.selected {
+    bgcolor: green;
+}

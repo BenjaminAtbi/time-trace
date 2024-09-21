@@ -1,5 +1,6 @@
 ﻿@using time_trace.Models
 @using System.Diagnostics
+@inject IJSRuntime JSRuntime
 
 <div class="container">
     <div class="tableWrapper">
@@ -27,12 +28,12 @@
                         {
                             @if (selectedDateTimes.Contains(dateHour))
                             {
-                                <td class="timeSlot selected" @onclick="() => ToggleTime(dateHour)">
+                                <td class="timeSlot selected" @onclick="LogMessage">
                                 </td>
                             }
                             else
                             {
-                                <td class="timeSlot" @onclick="() => ToggleTime(dateHour)">
+                                <td class="timeSlot" @onclick="LogMessage">
                                 </td>
                             }
                         }
@@ -128,5 +129,10 @@
     {
         if (selectedDateTimes.Contains(dateTime)) selectedDateTimes.Remove(dateTime);
         else selectedDateTimes.Add(dateTime);
+    }
+
+    void LogMessage()
+    {
+        Console.WriteLine("button clicked");
     }
 }
