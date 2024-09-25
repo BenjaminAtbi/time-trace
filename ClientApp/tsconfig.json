@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
-    "noImplicitAny": false,
-    "noEmitOnError": true,
-    "removeComments": false,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "target": "es5",
+    "lib": [ "es2023", "dom" ],
+    "module": "node16",
+    "target": "es2022",
     "jsx": "react-jsx",
-    "lib": [
-      "DOM"
-    ]
+    "moduleResolution": "node16"
   },
   
   "include": [

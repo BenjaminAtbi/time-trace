@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const injectedData = element.getAttribute('initial-data');
             const parsedData = JSON.parse(injectedData);
             const root = createRoot(element);
-            root.render(<Component {...parsedData} />);
+            root.render(<Component {...parsedData}/>);
         } else {
             console.error(`Component ${componentName} not found`);
         }

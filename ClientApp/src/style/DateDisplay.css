@@ -28,6 +28,6 @@
     margin: 3px;
 }
 
-.selected {
-    bgcolor: green;
+.selectedTime {
+    background-color: #99ccff;
 }
