@@ -18,12 +18,26 @@ namespace time_trace.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<ApplicationUser>()
-                .HasMany(e => e.Schedules)
-                .WithMany(e => e.Users)
-                .UsingEntity<UserSchedule>();
+            builder.Entity<UserSchedule>()
+                .HasKey(us => new { us.UserId, us.ScheduleId });
+
+            builder.Entity<UserSchedule>()
+                .HasOne(us => us.User)
+                .WithMany(u => u.UserSchedules)
+                .HasForeignKey(us => us.UserId);
+
+            builder.Entity<UserSchedule>()
+                .HasOne(us => us.Schedule)
+                .WithMany(s => s.UserSchedules)
+                .HasForeignKey(us => us.ScheduleId);
+
             builder.Entity<TimeSlot>()
-                .HasKey(nameof(TimeSlot.UserScheduleId), nameof(TimeSlot.DateTime));
+                .HasKey(ts => new { ts.DateTime, ts.UserId, ts.ScheduleId });
+
+            builder.Entity<TimeSlot>()
+                .HasOne(ts => ts.UserSchedule)
+                .WithMany(us => us.TimeSlots)
+                .HasForeignKey(ts => new { ts.UserId, ts.ScheduleId });
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }

@@ -34,14 +34,28 @@ namespace time_trace.Controllers
 
         public async Task<ActionResult> Edit(int? id)
         {
-
-            if (id == null) return RedirectToAction(nameof(Index));
+            var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (id == null || ActiveUID == null) return RedirectToAction(nameof(Index));
 
             var schedule = await _context.Schedules
                 .Include(s => s.UserSchedules).ThenInclude(s => s.TimeSlots)
                 .Include(s => s.UserSchedules).ThenInclude(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (schedule == null) return RedirectToAction(nameof(Index));
+
+            if (schedule.UserSchedules.FirstOrDefault(u => u.User.Id == ActiveUID) == null)
+            {
+                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
+                if (activeUser == null) RedirectToAction(nameof(Index));
+
+                var userSchedule = new UserSchedule
+                    {
+                        Schedule = schedule,
+                        User = activeUser,
+                    };
+                schedule.UserSchedules.Add(userSchedule);
+                await _context.SaveChangesAsync();
+            }
 
             return View(schedule);
         }
@@ -61,33 +75,32 @@ namespace time_trace.Controllers
 
             
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (ActiveUID == null) RedirectToAction(nameof(Index));
+            if (ActiveUID == null) return RedirectToAction(nameof(Index));
             _logger.LogInformation($"got activeuserid from claims: {ActiveUID} for ");
 
             var userSchedule = await _context.UserSchedules
                 .Include(u => u.TimeSlots)
                 .FirstOrDefaultAsync(s => s.User.Id == ActiveUID && s.ScheduleId == id);
             
-            //change to creation on signing onto schedule, error response/redirect
-            if (userSchedule == null)
-            {
-                _logger.LogInformation($"failed to find UserSchedule with UserId: {ActiveUID} and ScheduleID: {id}");
+            if (userSchedule == null) return RedirectToAction(nameof(Index));
+            //{
+                //_logger.LogInformation($"failed to find UserSchedule with UserId: {ActiveUID} and ScheduleID: {id}");
 
-                var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
-                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
-                _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");   
+                //var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
+                //var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
+                //_logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");   
                 
-                if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
-                else
-                {
-                    userSchedule = new UserSchedule
-                    {
-                        Schedule = schedule,
-                        User = activeUser,
-                    };
-                    schedule.UserSchedules.Add(userSchedule);
-                }
-            }
+                //if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
+                //else
+                //{
+                //    userSchedule = new UserSchedule
+                //    {
+                //        Schedule = schedule,
+                //        User = activeUser,
+                //    };
+                //    schedule.UserSchedules.Add(userSchedule);
+                //}
+            //}
 
             _logger.LogInformation($"got timeslots: {String.Join(" ",serializedData)}");
 

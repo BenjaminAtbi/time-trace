@@ -12,8 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
 ILogger logger = factory.CreateLogger("Program");
 
-
-
 // Add services
 if (builder.Environment.IsDevelopment())
 {

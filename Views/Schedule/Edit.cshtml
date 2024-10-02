@@ -11,26 +11,33 @@
 
     string userName = "";
     HashSet<DateTime> InitialUserTimes = new();
+    Dictionary<DateTime, HashSet<String>> InitialAllTimes = new();
 
     // InitialUserTimes.Add(DateTime.Parse("Thu, 03 Oct 2024 02:00:00 GMT"));
 
     if (User.Identity != null) userName = @User.Identity.Name ?? "";
     var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
-    if (userSchedule != null) InitialUserTimes.UnionWith(userSchedule.TimeSlots.Select(t => t.DateTime));
-    var InitialOtherTimes = Model.UserSchedules.Where(us => us.User.UserName != userName)
-        .ToDictionary(
-            us => us.User.UserName,
-            us => us.TimeSlots.Select(t => t.DateTime).ToHashSet()
-        );
+    if (userSchedule != null)
+    {
+        InitialUserTimes.UnionWith(userSchedule.TimeSlots.Select(t => t.DateTime));
 
-    Debug.WriteLine($"Provided USER TIMES: [{string.Join(" | ", userSchedule.TimeSlots.Select(t => t.DateTime))}]");
+        foreach (var timeSlot in Model.UserSchedules.SelectMany(us => us.TimeSlots))
+        {
+            if (!InitialAllTimes.ContainsKey(timeSlot.DateTime))
+            {
+                InitialAllTimes.Add(timeSlot.DateTime, new HashSet<String>());
+            }
+            InitialAllTimes[timeSlot.DateTime].Add(timeSlot.UserSchedule.User.UserName);
+        }
+    }
+
     Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ", InitialUserTimes)}]");
-    Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialOtherTimes.Values.SelectMany(h => h))}]");
+    Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialAllTimes.Values.SelectMany(h => h))}]");
 
     var JSONARGS = JsonSerializer.Serialize(new {
         user = userName,
         initialUserTimes = InitialUserTimes.Select(t => new DateTimeOffset(t).ToUnixTimeMilliseconds()),
-        initialOtherTimes = InitialOtherTimes,
+        initialAllTimes = InitialAllTimes,
         requestToken = requestToken,
         postDateApi = @postDateApi,
     });
