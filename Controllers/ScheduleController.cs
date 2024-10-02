@@ -49,55 +49,68 @@ namespace time_trace.Controllers
         // POST: ScheduleController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int? id, DateTime dateTimes)
+        public async Task<ActionResult> Edit(int? id, [FromBody] long[] serializedData)
         {
-            _logger.LogInformation("\n######\nBeginning Edit Post route\n########");
+            _logger.LogInformation($"\n######\nBeginning Edit Post route for id {id}\n########");
+            if (serializedData == null) _logger.LogInformation("null");
+            else _logger.LogInformation($"time slots: [{String.Join(' ',serializedData)}");
+            
+            //change to error responses
             if (id == null) return RedirectToAction(nameof(Index));
+            if (serializedData == null) return RedirectToAction(nameof(Index));
 
+            
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ActiveUID == null) RedirectToAction(nameof(Index));
-            _logger.LogInformation($"got activeuserid from claims: {ActiveUID}");
+            _logger.LogInformation($"got activeuserid from claims: {ActiveUID} for ");
 
             var userSchedule = await _context.UserSchedules
                 .Include(u => u.TimeSlots)
                 .FirstOrDefaultAsync(s => s.User.Id == ActiveUID && s.ScheduleId == id);
+            
+            //change to creation on signing onto schedule, error response/redirect
             if (userSchedule == null)
             {
                 _logger.LogInformation($"failed to find UserSchedule with UserId: {ActiveUID} and ScheduleID: {id}");
 
                 var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
                 var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
-                _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");
+                _logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");   
+                
                 if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
-
-                userSchedule = new UserSchedule
+                else
                 {
-                    Schedule = schedule,
-                    User = activeUser,
-                };
-                schedule.UserSchedules.Add(userSchedule);
+                    userSchedule = new UserSchedule
+                    {
+                        Schedule = schedule,
+                        User = activeUser,
+                    };
+                    schedule.UserSchedules.Add(userSchedule);
+                }
             }
-            if (dateTimes != null)
+
+            _logger.LogInformation($"got timeslots: {String.Join(" ",serializedData)}");
+
+            userSchedule.TimeSlots = new List<TimeSlot>();
+            foreach(var unixTimestamp in serializedData)
             {
-                //userSchedule.TimeSlots = dateTimes.Select(d => new TimeSlot
-                //{
-                //    UserSchedule = userSchedule,
-                //    DateTime = d
-                //}).ToList();
-                _logger.LogInformation($"DATETIME:  {dateTimes} ");
-                userSchedule.TimeSlots = new List<TimeSlot>
+                try
                 {
-                    new TimeSlot
+                    userSchedule.TimeSlots.Add(new TimeSlot
                     {
                         UserSchedule = userSchedule,
-                        DateTime = dateTimes.ToUniversalTime()
-                    }
+                        DateTime = DateTimeOffset.FromUnixTimeMilliseconds(unixTimestamp).UtcDateTime
+                    });
+                }
+                catch (ArgumentOutOfRangeException e) {
+                    _logger.LogError(e.Message);
                 };
-            }
+            }  
+
+            _logger.LogInformation($"schedule slots:  \n{string.Join("\n", userSchedule.TimeSlots.Select(t => t.DateTime.ToString()))}");
 
             await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Edit),id);
+            return Ok(serializedData);
         }
 
         // POST: ScheduleController/Create

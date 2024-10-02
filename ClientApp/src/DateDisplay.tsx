@@ -5,9 +5,11 @@ var sprintf = require('sprintf-js').sprintf;
 
 
 
-const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
+const InteractiveForm = ({user, initialUserTimes, initialOtherTimes, requestToken, postDateApi}) => {
 
-    type CellCallback = (date: dayjs.Dayjs) => void;
+    type CellCallback = (date: dayjs.Dayjs, e: React.MouseEvent<HTMLElement>) => void;
+
+    console.log(Array.from(initialUserTimes, (k: number) => dayjs(k).toString()));
 
     const [baseDate, setBaseDate] = useState<dayjs.Dayjs>(dayjs().startOf('day'));
     const [userTimeSlots, setUserTimeSlots] = useState<Map<number, Set<string>>>(ingestUserTimes(initialUserTimes));
@@ -18,8 +20,9 @@ const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
         let injestedTimes = new Map<number, Set<string>>();
         initialUserTimes.forEach((d) => {
             if (!dayjs(d).isValid()) throw Error('date in initialUserTimes invalid: ' + String(d));
-            injestedTimes.set(dayjs(d).startOf('hour').valueOf(), new Set<string>(user));
+            injestedTimes.set(dayjs(d).valueOf(), new Set<string>(user));
         });
+        console.log("initial user timeslots: " + Array.from(injestedTimes.keys(), (k: number) => dayjs(k).toString()));
         return injestedTimes;
     }
 
@@ -27,10 +30,31 @@ const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
         return new Map<number, Set<string>>();
     }
 
-    function userCellOnclick(date: dayjs.Dayjs) {
+    const PostDatesCallback = async (date: dayjs.Dayjs, e: React.MouseEvent<HTMLElement>) => {
 
 
-        //ajax
+        if (userTimeSlots.has(date.valueOf())) {
+            userTimeSlots.delete(date.valueOf());
+            setUserTimeSlots(new Map(userTimeSlots));
+        }
+        else setUserTimeSlots(new Map(userTimeSlots.set(date.valueOf(), new Set<string>(user))));
+
+        console.log("callback for date: " + date.toString());
+
+        console.log("selected " + JSON.stringify(Array.from(userTimeSlots.keys(), (k) => dayjs(k))))
+
+        const response = await fetch(postDateApi, {
+            method: "POST",
+            headers: {
+                RequestVerificationToken: requestToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Array.from(userTimeSlots.keys()))
+        });
+
+        if (!response.ok) {
+            console.log(`Request Failed: ${response.status}`);
+        }
     }
 
 
@@ -47,7 +71,6 @@ const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
     function genTimeSlotGrid(refSlots: Map<number, Set<string>>, callback: CellCallback) {
         return Array.from(Array(24).keys(), h => {
             let hour = h + 1;
-            console.log(refSlots);
             return <tr className='timeRow' key={hour}>
                 <td className="timeSlot">
                     <p className="timeRowHeader">
@@ -55,10 +78,12 @@ const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
                     </p>
                 </td>
                 {   Array.from(Array(7).keys(), day => {
-                        let refDate = baseDate.add(day, 'day').hour(hour);
+                        let cellDate = baseDate.add(day, 'day').hour(hour);
                         return <td
-                            className={'timeSlot ' + (refSlots.has(refDate.valueOf()) ? 'selectedTime' : 'deselectedTime')}
-                            key={refDate.valueOf()}
+                            className={'timeSlot ' + (refSlots.has(cellDate.valueOf()) ? 'selectedTime' : 'deselectedTime')}
+                            key={cellDate.valueOf()}
+                            data-date={cellDate.toString()}
+                            {... (callback != null ? { onClick : callback.bind(null, cellDate) } : {})}
                         ></td>
                     })
                 }
@@ -84,7 +109,7 @@ const InteractiveForm = ({user, initialUserTimes, initialOtherTimes}) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {genTimeSlotGrid(userTimeSlots, null)}
+                        {genTimeSlotGrid(userTimeSlots, PostDatesCallback)}
                     </tbody>
                 </table>
             </div >

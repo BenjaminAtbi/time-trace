@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using time_trace.Data;
 using time_trace.Models;
@@ -31,12 +33,11 @@ if (builder.Environment.IsDevelopment())
     //});
 }
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-//builder.Services.AddServerSideBlazor();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -59,11 +60,17 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = false;
 });
 
+//builder.Services.AddDataProtection()
+//    .PersistKeysToDbContext<ApplicationDbContext>()
+//    .SetApplicationName("TimeTrace");
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    // Cookie settings
-    options.Cookie.HttpOnly = true;
+    // Cookie
 
+    options.Cookie.Name = ".AspNet.SharedCookie";
+    options.Cookie.HttpOnly = true;
+    
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;

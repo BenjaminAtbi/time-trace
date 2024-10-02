@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const componentName = element.dataset.reactComponent;
         const Component = componentMap[componentName];
         if (Component) {
-            const injectedData = element.getAttribute('initial-data');
+            const injectedData = element.getAttribute('data-args');
             const parsedData = JSON.parse(injectedData);
             const root = createRoot(element);
             root.render(<Component {...parsedData}/>);

@@ -13,9 +13,11 @@
 
 .timeSlot {
     border: 1px solid;
+    user-select: none;
 }
 
 .timeRow {
+    user-select: none;
 }
 
 .timeRowHeader {

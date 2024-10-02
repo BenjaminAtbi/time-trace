@@ -2,14 +2,17 @@
 @using System.Diagnostics
 @using System.Text.Json
 @model time_trace.Models.Schedule
-
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 
 @{
     ViewData["Title"] = Model.Name;
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var postDateApi = @Url.Action(action: "Edit", controller: "Schedule");
+
     string userName = "";
     HashSet<DateTime> InitialUserTimes = new();
 
-    InitialUserTimes.Add(DateTime.Now.AddDays(2));
+    // InitialUserTimes.Add(DateTime.Parse("Thu, 03 Oct 2024 02:00:00 GMT"));
 
     if (User.Identity != null) userName = @User.Identity.Name ?? "";
     var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
@@ -19,26 +22,21 @@
             us => us.User.UserName,
             us => us.TimeSlots.Select(t => t.DateTime).ToHashSet()
         );
-    Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ",InitialUserTimes)}]");
+
+    Debug.WriteLine($"Provided USER TIMES: [{string.Join(" | ", userSchedule.TimeSlots.Select(t => t.DateTime))}]");
+    Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ", InitialUserTimes)}]");
     Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialOtherTimes.Values.SelectMany(h => h))}]");
 
-    var JSONARGS = JsonSerializer.Serialize(new { 
-            user = userName,
-            initialUserTimes = InitialUserTimes,
-            initialOtherTimes = InitialOtherTimes,
+    var JSONARGS = JsonSerializer.Serialize(new {
+        user = userName,
+        initialUserTimes = InitialUserTimes.Select(t => new DateTimeOffset(t).ToUnixTimeMilliseconds()),
+        initialOtherTimes = InitialOtherTimes,
+        requestToken = requestToken,
+        postDateApi = @postDateApi,
     });
 }
 
 <div class="text-center">
     
-    <div data-react-component="DateDisplay" initial-data="@JSONARGS"></div>
-    
-    <form asp-action="Edit">
-        <div asp-validation-summary="All" class="text-danger"></div>
-        <input type="hidden" asp-for="Id" />
-        <input class="form-control" name="dateTimes" type="DateTime-local" />
-        <div class="form-group">
-            <input type="submit" value="Save" class="btn btn-primary" />
-        </div>
-    </form>
+    <div data-react-component="DateDisplay" data-args="@JSONARGS"></div>
 </div>

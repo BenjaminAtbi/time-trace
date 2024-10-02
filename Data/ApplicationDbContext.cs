@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System.Reflection.Emit;
@@ -6,7 +7,8 @@ using time_trace.Models;
 
 namespace time_trace.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, 
+        IDataProtectionKeyContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -28,7 +30,6 @@ namespace time_trace.Data
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<UserSchedule> UserSchedules { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
-
-
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     }
 }
