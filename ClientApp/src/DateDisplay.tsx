@@ -12,6 +12,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
     const [baseDate, setBaseDate] = useState<dayjs.Dayjs>(dayjs().startOf('day'));
     const [userTimeSlots, setUserTimeSlots] = useState<Map<number, Set<string>>>(ingestUserTimes(initialUserTimes));
     const [allTimeSlots, setAllTimeSlots] = useState<Map<number, Set<string>>>(ingestAllTimes(initialAllTimes));
+    const [allUsers, setAllUsers] = useState<Set<string>>(ingestAllUsers(initialAllTimes));
 
     function ingestUserTimes(initialUserTimes): Map<number, Set<string>> {
         if (!Array.isArray(initialUserTimes)) throw Error("initialUserTimes is not array");
@@ -26,24 +27,36 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
 
     function ingestAllTimes(initialAllTimes): Map<number, Set<string>> {
         if (initialAllTimes === null) throw Error("initialUserTimes does not exist");
-        let injestedTimes = new Map<number, Set<string>>();
+        let ingestedTimes = new Map<number, Set<string>>();
         for (const key in initialAllTimes) {
             var prop = initialAllTimes[key];
             var date = dayjs(key);
             if (!Array.isArray(prop) || !date.isValid()) throw Error('initialAllTimes invalid property: ' + key + ': ' + prop);
-            injestedTimes.set(date.valueOf(), new Set<string>(prop));
+            ingestedTimes.set(date.valueOf(), new Set<string>(prop));
         }
-        //console.log("all times:" + Array.from(injestedTimes));
-        return injestedTimes;
+        return ingestedTimes;
+    }
+
+    function ingestAllUsers(initialAllTimes): Set<string> {
+        if (initialAllTimes === null) throw Error("initialUserTimes does not exist");
+        let ingestedUsers = new Set<string>();
+        for (const key in initialAllTimes) {
+            var users = initialAllTimes[key];
+            users.forEach((u) => ingestedUsers.add(u));
+        }
+        return ingestedUsers;
     }
 
     function getOtherUsers(): Set<string> {
-        var users = new Set<string>();
-        for (let slot of allTimeSlots.values()) {
-            slot.forEach(users.add, users);
-        }
+        var users = new Set<string>(allUsers);
         users.delete(user);
         return users;
+    }
+
+    function getUserDensity(cellDate: dayjs.Dayjs, refSlots: Map<number, Set<string>>): string {
+        var range = Math.min(5, allUsers.size);
+        var density = (refSlots.has(cellDate.valueOf()) ? (5 - range + refSlots.get(cellDate.valueOf()).size) : 0);
+        return "density" + density;
     }
 
     const PostDatesCallback = async (date: dayjs.Dayjs, e: React.MouseEvent<HTMLElement>) => {
@@ -80,6 +93,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
     }
 
     function genTimeSlotGrid(refSlots: Map<number, Set<string>>, callback: CellCallback) {
+        console.log("refslots: " + Array.from(refSlots))
         return Array.from(Array(24).keys(), h => {
             let hour = h + 1;
             return <tr className='timeRow' key={hour}>
@@ -89,9 +103,10 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
                     </p>
                 </td>
                 {   Array.from(Array(7).keys(), day => {
-                        let cellDate = baseDate.add(day, 'day').hour(hour);
+                    let cellDate = baseDate.add(day, 'day').hour(hour);
                         return <td
-                            className={'timeSlot ' + (refSlots.has(cellDate.valueOf()) ? 'selectedTime' : 'deselectedTime') }
+                            className={'timeSlot ' + (refSlots.has(cellDate.valueOf()) ? 'selectedTime ' : 'deselectedTime ')
+                                                   + (getUserDensity(cellDate, refSlots))}
                             key={cellDate.valueOf()}
                             data-date={cellDate.toString()}
                             {... (callback != null ? { onClick : callback.bind(null, cellDate) } : {})}

@@ -31,5 +31,29 @@
 }
 
 .selectedTime {
-    background-color: #99ccff;
+    
+}
+
+.density0 {
+    background-color: #ffffff;
+}
+
+.density1 {
+    background-color: rgb(200,255,200);
+}
+
+.density2 {
+    background-color: rgb(150,220,150);
+}
+
+.density3 {
+    background-color: rgb(100,200,100);
+}
+
+.density4 {
+    background-color: rgb(50,150,50);
+}
+
+.density5 {
+    background-color: rgb(0,90,0);
 }
