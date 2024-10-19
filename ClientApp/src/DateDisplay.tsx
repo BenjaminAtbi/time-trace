@@ -12,14 +12,14 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
     const [baseDate, setBaseDate] = useState<dayjs.Dayjs>(dayjs().startOf('day'));
     const [userTimeSlots, setUserTimeSlots] = useState<Map<number, Set<string>>>(ingestUserTimes(initialUserTimes));
     const [allTimeSlots, setAllTimeSlots] = useState<Map<number, Set<string>>>(ingestAllTimes(initialAllTimes));
-    const [allUsers, setAllUsers] = useState<Set<string>>(ingestAllUsers(initialAllTimes));
+    //const [allUsers, setAllUsers] = useState<Set<string>>(ingestAllUsers(initialAllTimes));
 
     function ingestUserTimes(initialUserTimes): Map<number, Set<string>> {
         if (!Array.isArray(initialUserTimes)) throw Error("initialUserTimes is not array");
         let injestedTimes = new Map<number, Set<string>>();
         initialUserTimes.forEach((d) => {
             if (!dayjs(d).isValid()) throw Error('date in initialUserTimes invalid: ' + String(d));
-            injestedTimes.set(dayjs(d).valueOf(), new Set<string>(user));
+            injestedTimes.set(dayjs(d).valueOf(), new Set<string>([user]));
         });
         //console.log("initial user timeslots: " + Array.from(injestedTimes.keys(), (k: number) => dayjs(k).toString()));
         return injestedTimes;
@@ -37,25 +37,28 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         return ingestedTimes;
     }
 
-    function ingestAllUsers(initialAllTimes): Set<string> {
-        if (initialAllTimes === null) throw Error("initialUserTimes does not exist");
+    function getAllUsers(timeSlots: Map<number, Set<string>>): Set<string> {
+        if (timeSlots === null) throw Error("initialUserTimes does not exist");
         let ingestedUsers = new Set<string>();
-        for (const key in initialAllTimes) {
-            var users = initialAllTimes[key];
-            users.forEach((u) => ingestedUsers.add(u));
-        }
+        timeSlots.forEach((value: Set<string>, key: number) => {
+            value.forEach((u) => ingestedUsers.add(u));
+        });
         return ingestedUsers;
     }
 
-    function getOtherUsers(): Set<string> {
-        var users = new Set<string>(allUsers);
-        users.delete(user);
-        return users;
-    }
+    //function getOtherUsers(): Set<string> {
+    //    var users = new Set<string>(allUsers);
+    //    users.delete(user);
+    //    return users;
+    //}
 
     function getUserDensity(cellDate: dayjs.Dayjs, refSlots: Map<number, Set<string>>): string {
-        var range = Math.min(5, allUsers.size);
-        var density = (refSlots.has(cellDate.valueOf()) ? (5 - range + refSlots.get(cellDate.valueOf()).size) : 0);
+        var range = getAllUsers(refSlots).size;
+        var density;
+        if (!refSlots.has(cellDate.valueOf())) density = 0;
+        else if (!(refSlots.get(cellDate.valueOf()).size === range)) density = 1;
+        else density = 2;
+        console.log(range + " " + density + " " + refSlots.has(cellDate.valueOf()) + " " + Array.from(getAllUsers(refSlots)));
         return "density" + density;
     }
 
@@ -65,7 +68,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
             userTimeSlots.delete(date.valueOf());
             setUserTimeSlots(new Map(userTimeSlots));
         }
-        else setUserTimeSlots(new Map(userTimeSlots.set(date.valueOf(), new Set<string>(user))));
+        else setUserTimeSlots(new Map(userTimeSlots.set(date.valueOf(), new Set<string>([user]))));
 
         if (allTimeSlots.has(date.valueOf())){
             if (allTimeSlots.get(date.valueOf()).has(user)) {
@@ -93,7 +96,6 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
     }
 
     function genTimeSlotGrid(refSlots: Map<number, Set<string>>, callback: CellCallback) {
-        console.log("refslots: " + Array.from(refSlots))
         return Array.from(Array(24).keys(), h => {
             let hour = h + 1;
             return <tr className='timeRow' key={hour}>
@@ -140,7 +142,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
                 </table>
             </div >
             <div className="dateTableWrapper">
-                <h3>Other Users: {[...getOtherUsers()].join(" ")}</h3>
+                <h3>Other Users: {[...getAllUsers(allTimeSlots)].join(" ")}</h3>
                 <table className="dateTimeTable">
                     <thead>
                         <tr>
