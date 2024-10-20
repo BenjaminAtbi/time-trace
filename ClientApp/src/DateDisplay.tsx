@@ -46,11 +46,11 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         return ingestedUsers;
     }
 
-    //function getOtherUsers(): Set<string> {
-    //    var users = new Set<string>(allUsers);
-    //    users.delete(user);
-    //    return users;
-    //}
+    function getOtherUsers(): Set<string> {
+        var users = new Set<string>(getAllUsers(allTimeSlots));
+        users.delete(user);
+        return users;
+    }
 
     function getUserDensity(cellDate: dayjs.Dayjs, refSlots: Map<number, Set<string>>): string {
         var range = getAllUsers(refSlots).size;
@@ -142,7 +142,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
                 </table>
             </div >
             <div className="dateTableWrapper">
-                <h3>Other Users: {[...getAllUsers(allTimeSlots)].join(" ")}</h3>
+                <h3>Other Users: {[...getOtherUsers()].join(" ")}</h3>
                 <table className="dateTimeTable">
                     <thead>
                         <tr>
