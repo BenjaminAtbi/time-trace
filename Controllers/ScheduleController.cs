@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
 using time_trace.Data;
 using time_trace.Models;
@@ -28,7 +29,10 @@ namespace time_trace.Controllers
         // GET: ScheduleController
         public async Task<ActionResult> Index()
         {
-            var schedules = await _context.Schedules.ToListAsync();
+            var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ActiveUID == null) return RedirectToAction(nameof(Index));
+            var schedules = await _context.Schedules.Where(s => s.UserSchedules.Any(us => us.UserId == ActiveUID))
+                .ToListAsync();
             return View(schedules);
         }
 
@@ -56,7 +60,7 @@ namespace time_trace.Controllers
                 schedule.UserSchedules.Add(userSchedule);
                 await _context.SaveChangesAsync();
             }
-
+              
             return View(schedule);
         }
 
@@ -66,8 +70,6 @@ namespace time_trace.Controllers
         public async Task<ActionResult> Edit(int? id, [FromBody] long[] serializedData)
         {
             _logger.LogInformation($"\n######\nBeginning Edit Post route for id {id}\n########");
-            if (serializedData == null) _logger.LogInformation("null");
-            else _logger.LogInformation($"time slots: [{String.Join(' ',serializedData)}");
             
             //change to error responses
             if (id == null) return RedirectToAction(nameof(Index));
@@ -76,33 +78,12 @@ namespace time_trace.Controllers
             
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ActiveUID == null) return RedirectToAction(nameof(Index));
-            _logger.LogInformation($"got activeuserid from claims: {ActiveUID} for ");
 
             var userSchedule = await _context.UserSchedules
                 .Include(u => u.TimeSlots)
                 .FirstOrDefaultAsync(s => s.User.Id == ActiveUID && s.ScheduleId == id);
             
             if (userSchedule == null) return RedirectToAction(nameof(Index));
-            //{
-                //_logger.LogInformation($"failed to find UserSchedule with UserId: {ActiveUID} and ScheduleID: {id}");
-
-                //var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == id);
-                //var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
-                //_logger.LogInformation($"schedule: {schedule} activeUser: {activeUser}, activeusername: {ActiveUID}");   
-                
-                //if (schedule == null || activeUser == null) RedirectToAction(nameof(Index));
-                //else
-                //{
-                //    userSchedule = new UserSchedule
-                //    {
-                //        Schedule = schedule,
-                //        User = activeUser,
-                //    };
-                //    schedule.UserSchedules.Add(userSchedule);
-                //}
-            //}
-
-            _logger.LogInformation($"got timeslots: {String.Join(" ",serializedData)}");
 
             userSchedule.TimeSlots = new List<TimeSlot>();
             foreach(var unixTimestamp in serializedData)
@@ -120,40 +101,70 @@ namespace time_trace.Controllers
                 };
             }  
 
-            _logger.LogInformation($"schedule slots:  \n{string.Join("\n", userSchedule.TimeSlots.Select(t => t.DateTime.ToString()))}");
+            //_logger.LogInformation($"schedule slots:  \n{string.Join("\n", userSchedule.TimeSlots.Select(t => t.DateTime.ToString()))}");
 
             await _context.SaveChangesAsync();
             return Ok(serializedData);
         }
 
+        [HttpGet]
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+
         // POST: ScheduleController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create([FromForm] string Name)
         {
+            _logger.LogInformation($"Schedule Creation: {Name}");
             try
             {
-                return RedirectToAction(nameof(Index));
+
+                var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (ActiveUID == null) return RedirectToAction(nameof(Index));
+
+                var user = await _context.Users.FirstOrDefaultAsync(s => s.Id == ActiveUID);
+                if (user == null) return RedirectToAction(nameof(Index));
+
+                var schedule = new Schedule { Name = Name };
+                var userSchedule = new UserSchedule
+                {
+                    User = user,
+                    Schedule = schedule,
+                    TimeSlots = new List<TimeSlot>()
+                };
+                _context.Schedules.Add(schedule);
+                _context.UserSchedules.Add(userSchedule);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Edit), new { id = schedule.Id});
             }
             catch
             {
-                return View();
+                return RedirectToAction(nameof(Index));
             }
         }
 
         // POST: ScheduleController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
+            var schedule = new Schedule { Id = id };
+            _context.Schedules.Remove(schedule);
             try
             {
-                return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
             }
-            catch
+            catch (DbUpdateConcurrencyException)
             {
-                return View();
-            }
+                return RedirectToAction(nameof(Index));
+            } 
+
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

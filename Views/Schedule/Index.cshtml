@@ -10,7 +10,7 @@
             <th>
                 Schedules
             </th>
-            <th></th>
+            <th><a asp-action="Create">Create</a></th>
         </tr>
     </thead>
     <tbody>
@@ -21,8 +21,14 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <form>
+                        <button asp-action="Edit" asp-route-id="@item.Id">Edit</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post">
+                        <button asp-action="Delete" asp-route-id="@item.Id">Delete</button>
+                    </form>
                 </td>
             </tr>
         }
