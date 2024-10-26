@@ -2,35 +2,41 @@
 
 @{
     ViewData["Title"] = "Schedules";
+    string userName = "";
+    if (User.Identity != null) userName = @User.Identity.Name ?? "";
+
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Schedules
-            </th>
-            <th><a asp-action="Create">Create</a></th>
-        </tr>
-    </thead>
-    <tbody>
+    <div class="index-container">
+        <div class="index-row">
+            <div class="index-title">
+            <p>Schedules</p>
+            </div>
+            <div class="index-title-create">
+                <form method="get">
+                    <button class="index-button" asp-action="Create">Create New Schedule</button>
+                </form>
+            </div>
+        </div>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
+            <div class="index-row">
+                <div class="index-item-title">
                     @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
+                </div>
+                <div class="index-item">
                     <form>
-                        <button asp-action="Edit" asp-route-id="@item.Id">Edit</button>
+                        <button class="index-button" asp-action="Edit" asp-route-id="@item.Id">Edit</button>
                     </form>
-                </td>
-                <td>
+                </div>
+                <div class="index-item">
+                @if (item.Owner.UserName == userName)
+                {
                     <form method="post">
-                        <button asp-action="Delete" asp-route-id="@item.Id">Delete</button>
+                        <button class="index-button" asp-action="Delete" asp-route-id="@item.Id">Delete</button>
                     </form>
-                </td>
-            </tr>
+                }
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>

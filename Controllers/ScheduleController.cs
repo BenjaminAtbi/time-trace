@@ -31,7 +31,9 @@ namespace time_trace.Controllers
         {
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ActiveUID == null) return RedirectToAction(nameof(Index));
-            var schedules = await _context.Schedules.Where(s => s.UserSchedules.Any(us => us.UserId == ActiveUID))
+            var schedules = await _context.Schedules.
+                Where(s => s.UserSchedules.Any(us => us.UserId == ActiveUID))
+                .Include(s => s.Owner)
                 .ToListAsync();
             return View(schedules);
         }
@@ -129,7 +131,12 @@ namespace time_trace.Controllers
                 var user = await _context.Users.FirstOrDefaultAsync(s => s.Id == ActiveUID);
                 if (user == null) return RedirectToAction(nameof(Index));
 
-                var schedule = new Schedule { Name = Name };
+                var schedule = new Schedule 
+                { 
+                    Name = Name,
+                    Owner = user,
+                    OwnerId = user.Id,
+                };
                 var userSchedule = new UserSchedule
                 {
                     User = user,
@@ -153,7 +160,14 @@ namespace time_trace.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Delete(int id)
         {
-            var schedule = new Schedule { Id = id };
+
+            var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ActiveUID == null) return RedirectToAction(nameof(Index));
+
+            var schedule = await _context.Schedules.
+                FirstOrDefaultAsync(s => s.Id == id && s.Owner.Id == ActiveUID);
+            if(schedule == null) return RedirectToAction(nameof(Index));
+
             _context.Schedules.Remove(schedule);
             try
             {

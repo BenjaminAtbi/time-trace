@@ -21,3 +21,42 @@ body {
     margin-bottom:10px;
 }
 
+.index-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.index-row {
+    display: flex;
+    padding: 10px 0px 10px 0px;
+    border-bottom: 1px solid grey;
+}
+
+.index-title {
+    flex-grow: 2;
+    flex-basis: 0;
+    font-weight: bold;
+    font-size: larger
+}
+
+.index-title-create {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.index-button {
+    border: solid 1px;
+    border-color: lightgrey;
+}
+
+.index-item-title {
+    flex-grow: 4;
+    flex-basis: 0;
+}
+
+.index-item {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+

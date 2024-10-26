@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using time_trace.Data;
@@ -11,9 +12,10 @@ using time_trace.Data;
 namespace time_trace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241026031918_addScheduleOwner")]
+    partial class addScheduleOwner
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,7 +255,6 @@ namespace time_trace.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -351,9 +352,7 @@ namespace time_trace.Migrations
                 {
                     b.HasOne("time_trace.Models.ApplicationUser", "Owner")
                         .WithMany("OwnedSchedules")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OwnerId");
 
                     b.Navigation("Owner");
                 });

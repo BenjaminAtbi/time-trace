@@ -31,6 +31,11 @@ namespace time_trace.Data
                 .WithMany(s => s.UserSchedules)
                 .HasForeignKey(us => us.ScheduleId);
 
+            builder.Entity<Schedule>()
+                .HasOne(s => s.Owner)
+                .WithMany(u => u.OwnedSchedules)
+                .HasForeignKey(s => s.OwnerId);
+
             builder.Entity<TimeSlot>()
                 .HasKey(ts => new { ts.DateTime, ts.UserId, ts.ScheduleId });
 
