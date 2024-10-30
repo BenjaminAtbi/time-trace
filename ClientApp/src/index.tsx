@@ -1,9 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import DateDisplay from './DateDisplay';
+import ShareCode from './ShareCode';
 
 const componentMap = {
-    'DateDisplay': DateDisplay
+    'DateDisplay': DateDisplay,
+    'ShareCode': ShareCode,
 };
 
 document.addEventListener('DOMContentLoaded', () => {

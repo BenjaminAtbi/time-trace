@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using time_trace.Data;
 using time_trace.Models;
 
@@ -31,6 +33,7 @@ namespace time_trace.Controllers
         {
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ActiveUID == null) return RedirectToAction(nameof(Index));
+
             var schedules = await _context.Schedules.
                 Where(s => s.UserSchedules.Any(us => us.UserId == ActiveUID))
                 .Include(s => s.Owner)
@@ -41,7 +44,8 @@ namespace time_trace.Controllers
         public async Task<ActionResult> Edit(int? id)
         {
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (id == null || ActiveUID == null) return RedirectToAction(nameof(Index));
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (id == null || ActiveUID == null || userName == null) return RedirectToAction(nameof(Index));
 
             var schedule = await _context.Schedules
                 .Include(s => s.UserSchedules).ThenInclude(s => s.TimeSlots)
@@ -51,18 +55,16 @@ namespace time_trace.Controllers
 
             if (schedule.UserSchedules.FirstOrDefault(u => u.User.Id == ActiveUID) == null)
             {
-                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
-                if (activeUser == null) RedirectToAction(nameof(Index));
-
-                var userSchedule = new UserSchedule
-                    {
-                        Schedule = schedule,
-                        User = activeUser,
-                    };
-                schedule.UserSchedules.Add(userSchedule);
-                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-              
+
+            Match match = Regex.Match(Request.Path, ".*Schedule");
+            if (!match.Success) return RedirectToAction(nameof(Index));
+            var SharePathPrefix = match.Captures[0].Value;
+
+            ViewData["postDateApi"] = Url.Action(action: "Edit", controller: "Schedule");
+            ViewData["userName"] = userName;
+            ViewData["ShareURL"] = $"{Request.Scheme}://{Request.Host}{SharePathPrefix}/Share/{schedule.Sharecode}";
             return View(schedule);
         }
 
@@ -71,12 +73,10 @@ namespace time_trace.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int? id, [FromBody] long[] serializedData)
         {
-            _logger.LogInformation($"\n######\nBeginning Edit Post route for id {id}\n########");
             
             //change to error responses
             if (id == null) return RedirectToAction(nameof(Index));
             if (serializedData == null) return RedirectToAction(nameof(Index));
-
             
             var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ActiveUID == null) return RedirectToAction(nameof(Index));
@@ -109,6 +109,44 @@ namespace time_trace.Controllers
             return Ok(serializedData);
         }
 
+        public async Task<ActionResult> Share(string? id)
+        {
+            var ActiveUID = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ActiveUID == null) return RedirectToAction(nameof(Index));
+
+            Guid guid;
+            try
+            {
+                guid = new Guid(id);
+            } catch (Exception e)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var schedule = await _context.Schedules
+                .Include(s => s.UserSchedules).ThenInclude(s => s.User)
+                .FirstOrDefaultAsync(s => s.Sharecode.Equals(guid));
+            if (schedule == null) return RedirectToAction(nameof(Index));
+
+            if (schedule.UserSchedules.FirstOrDefault(u => u.User.Id == ActiveUID) == null)
+            {
+                var activeUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == ActiveUID);
+                if (activeUser == null) return RedirectToAction(nameof(Index));
+
+                var userSchedule = new UserSchedule
+                {
+                    Schedule = schedule,
+                    User = activeUser,
+                };
+                schedule.UserSchedules.Add(userSchedule);
+                await _context.SaveChangesAsync();
+            }
+
+
+            if (schedule == null) return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Edit), new { id = schedule.Id });
+        }
+
         [HttpGet]
         public ActionResult Create()
         {
@@ -131,8 +169,8 @@ namespace time_trace.Controllers
                 var user = await _context.Users.FirstOrDefaultAsync(s => s.Id == ActiveUID);
                 if (user == null) return RedirectToAction(nameof(Index));
 
-                var schedule = new Schedule 
-                { 
+                var schedule = new Schedule
+                {
                     Name = Name,
                     Owner = user,
                     OwnerId = user.Id,
@@ -154,6 +192,8 @@ namespace time_trace.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+
 
         // POST: ScheduleController/Delete/5
         [HttpPost]

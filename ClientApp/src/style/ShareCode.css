@@ -1,0 +1,23 @@
+﻿.sharecode-container {
+    margin: auto;
+    width: 50%;
+    display: flex;
+    justify-content:center;
+    padding-top: 20px;
+}
+
+.sharecode-content {
+    margin: 0 2em 0 2em;
+    padding: .5em;
+    background: lightgrey;
+    border: solid;
+    border-width:1px;
+    border-color: grey;
+}
+
+.sharecode-title {
+    font-weight:bold;
+    padding: .5em 0 .5em 0;
+}
+
+

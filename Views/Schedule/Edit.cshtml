@@ -7,16 +7,13 @@
 @{
     ViewData["Title"] = Model.Name;
     var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
-    var postDateApi = @Url.Action(action: "Edit", controller: "Schedule");
+    string? userName = (string?) ViewData["userName"];
 
-    string userName = "";
     HashSet<DateTime> InitialUserTimes = new();
     Dictionary<DateTime, HashSet<String>> InitialAllTimes = new();
 
-    // InitialUserTimes.Add(DateTime.Parse("Thu, 03 Oct 2024 02:00:00 GMT"));
-
-    if (User.Identity != null) userName = @User.Identity.Name ?? "";
     var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
+
     if (userSchedule != null)
     {
         InitialUserTimes.UnionWith(userSchedule.TimeSlots.Select(t => t.DateTime));
@@ -31,19 +28,30 @@
         }
     }
 
-    Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ", InitialUserTimes)}]");
-    Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialAllTimes.Values.SelectMany(h => h))}]");
+    // Debug.WriteLine($"INITIAL USER TIMES: [{string.Join(" | ", InitialUserTimes)}]");
+    // Debug.WriteLine($"OTHER USER TIMES: [{string.Join(" | ", InitialAllTimes.Values.SelectMany(h => h))}]");
 
-    var JSONARGS = JsonSerializer.Serialize(new {
+    var DateDisplayArgs = JsonSerializer.Serialize(new {
         user = userName,
         initialUserTimes = InitialUserTimes.Select(t => new DateTimeOffset(t).ToUnixTimeMilliseconds()),
         initialAllTimes = InitialAllTimes,
         requestToken = requestToken,
-        postDateApi = @postDateApi,
+        postDateApi = ViewData["postDateApi"],
+    });
+
+    var ShareCodeArgs = JsonSerializer.Serialize(new
+    {
+        sharecode = ViewData["ShareURL"]
     });
 }
 
 <div class="text-center">
     
-    <div data-react-component="DateDisplay" data-args="@JSONARGS"></div>
-</div>
+    <div data-react-component="DateDisplay" data-args="@DateDisplayArgs"></div>
+
+    @if(userName == Model.Owner.UserName)
+    {
+            <div data-react-component="ShareCode" data-args="@ShareCodeArgs"></div>
+    }
+
+</>
