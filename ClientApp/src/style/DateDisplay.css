@@ -14,6 +14,7 @@
 .timeSlot {
     border: 1px solid;
     user-select: none;
+    min-width: 4em;
 }
 
 .timeRow {
@@ -30,26 +31,40 @@
     margin: 3px;
 }
 
+.userListWrapper {
+    background-color: lightgray;
+    padding: 5px 10px 5px 10px;
+    height:100%;
+}
+
 .selectedTime {
     
 }
 
-.density0 {
+.user0 {
     background-color: #ffffff;
 }
 
-.density1 {
-    background-color: rgb(90,180,255);
+.user1 {
+    background-color: #b3e6ff;
 }
 
-.density2 {
-    background-color: rgb(50,100,200);
+.user2 {
+    background-color: #3385ff;
 }
 
-.density4 {
-    background-color: rgb(50,50,150);
+.user3 {
+    background-color: #0033cc;
 }
 
-.density5 {
-    background-color: rgb(0,0,90);
+.other1 {
+    background-color: #66ff66;
+}
+
+.other2 {
+    background-color: #009900;
+}
+
+.other3 {
+    background-color: #006600;
 }

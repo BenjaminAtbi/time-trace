@@ -5,14 +5,15 @@ var sprintf = require('sprintf-js').sprintf;
 
 
 
-const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken, postDateApi}) => {
+const InteractiveForm = ({user, users, initialUserTimes, initialAllTimes, requestToken, postDateApi}) => {
 
     type CellCallback = (date: dayjs.Dayjs, e: React.MouseEvent<HTMLElement>) => void;
+    type getSlotClass = (cellDate: dayjs.Dayjs) => string;
 
     const [baseDate, setBaseDate] = useState<dayjs.Dayjs>(dayjs().startOf('day'));
     const [userTimeSlots, setUserTimeSlots] = useState<Map<number, Set<string>>>(ingestUserTimes(initialUserTimes));
     const [allTimeSlots, setAllTimeSlots] = useState<Map<number, Set<string>>>(ingestAllTimes(initialAllTimes));
-    //const [allUsers, setAllUsers] = useState<Set<string>>(ingestAllUsers(initialAllTimes));
+    const [allUsers, setAllUsers] = useState<Array<string>>(ingestAllUsers(users));
 
     function ingestUserTimes(initialUserTimes): Map<number, Set<string>> {
         if (!Array.isArray(initialUserTimes)) throw Error("initialUserTimes is not array");
@@ -36,6 +37,11 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         }
         return ingestedTimes;
     }
+    function ingestAllUsers(users): Array<string> {
+        if (users === null || !Array.isArray(users)) throw Error("users does not exist or is invalid");
+        console.log("users: "+ users);
+        return users;
+    }
 
     function getAllUsers(timeSlots: Map<number, Set<string>>): Set<string> {
         if (timeSlots === null) throw Error("initialUserTimes does not exist");
@@ -52,14 +58,29 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         return users;
     }
 
-    function getUserDensity(cellDate: dayjs.Dayjs, refSlots: Map<number, Set<string>>): string {
-        var range = getAllUsers(refSlots).size;
+    function getSlotClassUser(cellDate: dayjs.Dayjs): string {
         var density;
-        if (!refSlots.has(cellDate.valueOf())) density = 0;
-        else if (!(refSlots.get(cellDate.valueOf()).size === range)) density = 1;
-        else density = 2;
-        console.log(range + " " + density + " " + refSlots.has(cellDate.valueOf()) + " " + Array.from(getAllUsers(refSlots)));
-        return "density" + density;
+        if (!userTimeSlots.has(cellDate.valueOf())) return "user0";
+        else return "user1";
+    }
+
+    function getSlotClassSchedule(cellDate: dayjs.Dayjs): string {
+        var range = allUsers.length;
+        var density;
+        if (!allTimeSlots.has(cellDate.valueOf())) return "user0";
+        else {
+            var slot = allTimeSlots.get(cellDate.valueOf());
+            //if (slot.has(user)) {
+                if (slot.size === range) return "user3";
+                else if (slot.size > 1) return "user2";
+                else return "user1";
+//            }
+//            else {
+//                if (slot.size === range) return "other3";
+//                else if (slot.size > 1) return "other2";
+//0               else return "other1";
+//            }
+        }
     }
 
     const PostDatesCallback = async (date: dayjs.Dayjs, e: React.MouseEvent<HTMLElement>) => {
@@ -95,7 +116,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         }
     }
 
-    function genTimeSlotGrid(refSlots: Map<number, Set<string>>, callback: CellCallback) {
+    function genTimeSlotGrid(refSlots: Map<number, Set<string>>, callback: CellCallback, getSlotClass: getSlotClass) {
         return Array.from(Array(24).keys(), h => {
             let hour = h + 1;
             return <tr className='timeRow' key={hour}>
@@ -108,7 +129,7 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
                     let cellDate = baseDate.add(day, 'day').hour(hour);
                         return <td
                             className={'timeSlot ' + (refSlots.has(cellDate.valueOf()) ? 'selectedTime ' : 'deselectedTime ')
-                                                   + (getUserDensity(cellDate, refSlots))}
+                                                   + (getSlotClass(cellDate))}
                             key={cellDate.valueOf()}
                             data-date={cellDate.toString()}
                             {... (callback != null ? { onClick : callback.bind(null, cellDate) } : {})}
@@ -125,10 +146,24 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
         </td>
     ); 
 
+    const nameList: JSX.Element =
+        <div className="dateTableWrapper">
+            <h3>Users</h3>
+            <div className="userListWrapper">
+                {Array.from(allUsers, u =>
+                    <div className="nameListItem">
+                        {u}
+                    </div>)}
+            </div>
+        </div>
+
+
     return (
         <div className="dateDisplayContainer"> 
             <div className="dateTableWrapper">
-                <h3>Your Times</h3>
+                <div>
+                    <h3>Select your available time slots</h3>
+                </div>
                 <table className="dateTimeTable">
                     <thead>
                         <tr>
@@ -137,23 +172,26 @@ const InteractiveForm = ({user, initialUserTimes, initialAllTimes, requestToken,
                         </tr>
                     </thead>
                     <tbody>
-                        {genTimeSlotGrid(userTimeSlots, PostDatesCallback)}
+                        {genTimeSlotGrid(userTimeSlots, PostDatesCallback, getSlotClassUser)}
                     </tbody>
                 </table>
             </div >
             <div className="dateTableWrapper">
-                <h3>Other Users: {[...getOtherUsers()].join(" ")}</h3>
-                <table className="dateTimeTable">
+                <h3>Schedule</h3>
+                <table className="dateTimeTable"> 
                     <thead>
                         <tr>
                             <td />
                             {dateHeaderCells}
-                        </tr>
-                    </thead>
+                        </tr> 
+                    </thead> 
                     <tbody>
-                        {genTimeSlotGrid(allTimeSlots, null)}
+                        {genTimeSlotGrid(allTimeSlots, null, getSlotClassSchedule)}
                     </tbody>
                 </table>
+            </div>
+            <div className="nameList">
+                {nameList}
             </div>
         </div >
     );
