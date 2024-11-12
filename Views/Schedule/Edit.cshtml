@@ -12,13 +12,18 @@
     HashSet<DateTime> InitialUserTimes = new();
     Dictionary<DateTime, HashSet<String>> InitialAllTimes = new();
 
-    var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
+    List<String> users = Model.UserSchedules.Select(us => us.User.UserName).ToList();
 
+    var userSchedule = Model.UserSchedules.FirstOrDefault(u => u.User.UserName == userName);
     if (userSchedule != null)
     {
         InitialUserTimes.UnionWith(userSchedule.TimeSlots.Select(t => t.DateTime));
+    }
 
-        foreach (var timeSlot in Model.UserSchedules.SelectMany(us => us.TimeSlots))
+    var allTimeSlots = Model.UserSchedules.SelectMany(us => us.TimeSlots);
+    if (allTimeSlots != null)
+    {
+        foreach (var timeSlot in allTimeSlots)
         {
             if (!InitialAllTimes.ContainsKey(timeSlot.DateTime))
             {
@@ -33,6 +38,7 @@
 
     var DateDisplayArgs = JsonSerializer.Serialize(new {
         user = userName,
+        users = users,
         initialUserTimes = InitialUserTimes.Select(t => new DateTimeOffset(t).ToUnixTimeMilliseconds()),
         initialAllTimes = InitialAllTimes,
         requestToken = requestToken,
