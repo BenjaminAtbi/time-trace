@@ -13,12 +13,6 @@ namespace time_trace.Models
                 {
                     return;
                 }
-                context.Schedules.Add(
-                    new Schedule
-                    {
-                        Name = "Default Schedule"
-                    }
-                );
                 context.SaveChanges();
             }
         }
