@@ -4,13 +4,10 @@ import './style/ShareCode.css';
 const InteractiveForm = ({sharecode}) => {
 
     function copyCodeButton() {
-
         let func = async () => {
             await navigator.clipboard.writeText(sharecode)
         }
-
         return <button className="sharecode-button" onClick={func}>Copy</button>
-        
     }
 
     return (
@@ -21,10 +18,7 @@ const InteractiveForm = ({sharecode}) => {
                 {copyCodeButton()}
             </div>
         </div>
-
     );
-
-
 }
 
 export default InteractiveForm;

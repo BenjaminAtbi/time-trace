@@ -37,6 +37,11 @@
     height:100%;
 }
 
+.ListContainer {
+    display: flex;
+    flex-direction: column;
+}
+
 .selectedTime {
     
 }
