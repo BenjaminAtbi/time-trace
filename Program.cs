@@ -83,7 +83,7 @@ using (var scope = app.Services.CreateScope())
 }
 
     //logging env
-    app.Logger.LogInformation("initialization  logging is a go");
+    app.Logger.LogInformation("initialization logging is a go");
     app.Logger.LogInformation("Environment: " + builder.Environment.EnvironmentName);
 
 // Configure the HTTP request pipeline.
@@ -107,8 +107,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "IncludeArea",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Schedule}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 //app.MapBlazorHub();
 app.MapRazorPages();
 app.Run();
