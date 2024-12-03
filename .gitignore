@@ -406,3 +406,4 @@ FodyWeavers.xsd
 /wwwroot/lib/bootstrap/dist/css/bootstrap-theme.min.css.map
 /ClientApp/package-lock.json
 /wwwroot/js
+/appsettings.json
